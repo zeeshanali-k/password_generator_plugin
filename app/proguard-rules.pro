@@ -72,6 +72,7 @@
 
 # keep di class
 -keep class app.keyboardly.addon.sample.di.** { *; }
+-keep class app.keyboardly.addon.passwordgenerator.di.** { *; }
 
 -dontwarn com.google.errorprone.annotations.**
 
@@ -90,6 +91,14 @@
     app.keyboardly.addon.sample.DynamicFeatureImpl$Provider Provider;
 }
 -keep class app.keyboardly.addon.sample.DynamicFeatureImpl$Provider {
+    *;
+}
+
+-keep class app.keyboardly.addon.passwordgenerator.DynamicFeatureImpl {
+    #noinspection ShrinkerUnresolvedReference
+    app.keyboardly.addon.passwordgenerator.DynamicFeatureImpl$Provider Provider;
+}
+-keep class app.keyboardly.addon.passwordgenerator.DynamicFeatureImpl$Provider {
     *;
 }
 

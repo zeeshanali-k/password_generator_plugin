@@ -1,0 +1,51 @@
+plugins {
+    id 'com.android.dynamic-feature'
+    id 'org.jetbrains.kotlin.android'
+    id 'kotlin-kapt'
+}
+
+android{
+
+    namespace 'app.keyboardly.addon.passwordgenerator'
+
+    compileSdk rootProject.ext.compileSdkVersion
+    defaultConfig {
+        minSdk rootProject.ext.minSdkVersion
+
+        // information for versioning
+        buildConfigField "int", "ADD_ON_VERSION", "1" // always increase it on update
+        buildConfigField "String", "ADD_ON_VERSION_NAME", "\"1.0\""
+        buildConfigField "String", "ADD_ON_ID", "\"passwordgenerator\"" // should same with module name
+    }
+
+    kapt {
+        generateStubs = true
+    }
+
+    buildFeatures {
+        viewBinding true
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            // proguardFile's configuration like below should be removed
+            // proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+}
+
+dependencies {
+
+    implementation project(":app")
+    implementation project(":libraries:style")
+    implementation project(":libraries:actionview")
+
+    implementation "androidx.core:core-ktx:$coreKtxVersion"
+    implementation "androidx.databinding:viewbinding:$view_binding_version"
+
+    kapt "com.google.dagger:dagger-compiler:$dagger_version"
+    implementation "com.google.dagger:dagger:$dagger_version"
+    implementation "com.google.dagger:dagger-android-support:$dagger_version"
+}
