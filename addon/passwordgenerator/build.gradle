@@ -13,8 +13,8 @@ android{
         minSdk rootProject.ext.minSdkVersion
 
         // information for versioning
-        buildConfigField "int", "ADD_ON_VERSION", "1" // always increase it on update
-        buildConfigField "String", "ADD_ON_VERSION_NAME", "\"1.0\""
+        buildConfigField "int", "ADD_ON_VERSION", "5" // always increase it on update
+        buildConfigField "String", "ADD_ON_VERSION_NAME", "\"1.13\""
         buildConfigField "String", "ADD_ON_ID", "\"passwordgenerator\"" // should same with module name
     }
 

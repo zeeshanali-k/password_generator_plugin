@@ -3,6 +3,8 @@ package app.keyboardly.addon.passwordgenerator.views
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import android.content.Context.MODE_PRIVATE
+import android.content.SharedPreferences
 import android.util.Log
 import android.widget.EditText
 import android.widget.SeekBar
@@ -17,7 +19,17 @@ class PasswordGeneratorView(
     dependency: KeyboardActionDependency
 ) : KeyboardActionView(dependency), InputPresenter {
 
+    // Default values
+    private val defaultUseUppercase = true
+    private val defaultUseLowercase = true
+    private val defaultUseNumber = true
+    private val defaultUseSpecialCharacter = true
+    private val defaultMinimumNumber = 1
+    private val defaultMinimumSpecialCharacters = 1
+    private val defaultPasswordCount = 10
 
+
+    //fields
     private var useUppercase = false
     private var useLowercase = false
     private var useNumber = false
@@ -26,12 +38,59 @@ class PasswordGeneratorView(
 
     private var minimumNumber = 1
     private var minimumSpecialCharacters = 1
+    private lateinit var sharedPreferences: SharedPreferences
 
     override fun onCreate() {
         binding = PasswordGeneratorViewBinding.inflate(getLayoutInflater())
         viewLayout = binding.root
+        sharedPreferences = getContext()
+            .getSharedPreferences(
+                "keyboardly_devscion_password_generator",
+                MODE_PRIVATE
+            )
         initClick()
         initHeader()
+        setDefaults()
+    }
+
+    private fun setDefaults() {
+
+        sharedPreferences.getBoolean("firstTime", true).let {
+            if (it) {
+                with(sharedPreferences.edit()) {
+                    putBoolean("useUppercase", defaultUseUppercase)
+                    putBoolean("useLowercase", defaultUseLowercase)
+                    putBoolean("useNumber", defaultUseNumber)
+                    putBoolean("useSpecialCharacter", defaultUseSpecialCharacter)
+                    putInt("minimumNumber", defaultMinimumNumber)
+                    putInt("minimumSpecialCharacters", defaultMinimumSpecialCharacters)
+                    putInt("passwordCount", defaultPasswordCount)
+                    putBoolean("firstTime", false)
+                    apply()
+                }
+            }
+        }
+        useUppercase = sharedPreferences.getBoolean("useUppercase", defaultUseUppercase)
+        useLowercase = sharedPreferences.getBoolean("useLowercase", defaultUseLowercase)
+        useNumber = sharedPreferences.getBoolean("useNumber", defaultUseNumber)
+        useSpecialCharacter =
+            sharedPreferences.getBoolean("useSpecialCharacter", defaultUseSpecialCharacter)
+        minimumNumber = sharedPreferences.getInt("minimumNumber", defaultMinimumNumber)
+        minimumSpecialCharacters = sharedPreferences.getInt(
+            "minimumSpecialCharacters",
+            defaultMinimumSpecialCharacters
+        )
+
+        //setting values to views
+        binding.pwdLengthSlider.progress =
+            sharedPreferences.getInt("passwordCount", defaultPasswordCount)
+        binding.uppercaseCb.isChecked = useUppercase
+        binding.lowercaseCb.isChecked = useLowercase
+        binding.numbersCb.isChecked = useNumber
+        binding.specialChars.isChecked = useSpecialCharacter
+        binding.minNumbersTv.text = minimumNumber.toString()
+        binding.minSpecialCharsTv.text = minimumSpecialCharacters.toString()
+        generatePassword()
     }
 
     private fun initClick() {
@@ -94,7 +153,8 @@ class PasswordGeneratorView(
             }
 
             binding.pwdLengthTv.text = pwdLengthSlider.progress.toString()
-            pwdLengthSlider.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            pwdLengthSlider.setOnSeekBarChangeListener(object :
+                SeekBar.OnSeekBarChangeListener {
                 override fun onProgressChanged(
                     seekBar: SeekBar?,
                     progress: Int,
@@ -113,20 +173,10 @@ class PasswordGeneratorView(
             })
 
             footerFormReset.setOnClickListener {
-                useLowercase = false
-                useUppercase = false
-                useSpecialCharacter = false
-                useNumber = false
-                minimumNumber = 1
-                minimumSpecialCharacters = 1
-                pwdLengthSlider.progress = 4
-                numbersCb.isChecked = false
-                uppercaseCb.isChecked = false
-                lowercaseCb.isChecked = false
-                specialChars.isChecked = false
-                minNumbersTv.text = minimumNumber.toString()
-                minSpecialCharsTv.text = minimumSpecialCharacters.toString()
-                generatePassword()
+                sharedPreferences.edit()
+                    .putBoolean("firstTime",true)
+                    .apply()
+                setDefaults()
             }
         }
     }
@@ -140,9 +190,9 @@ class PasswordGeneratorView(
     }
 
 
-
     private fun copyTextToClipboard(text: String) {
-        val clipboard = getContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        val clipboard =
+            getContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
         val clip = ClipData.newPlainText("Label", text)
         clipboard.setPrimaryClip(clip)
         Toast.makeText(
@@ -167,6 +217,16 @@ class PasswordGeneratorView(
         if (passwordChars.isEmpty()) {
             binding.password.setText("")
             return
+        }
+        with(sharedPreferences.edit()) {
+            putBoolean("useUppercase", useUppercase)
+            putBoolean("useLowercase", useLowercase)
+            putBoolean("useNumber", useNumber)
+            putBoolean("useSpecialCharacter", useSpecialCharacter)
+            putInt("minimumNumber", minimumNumber)
+            putInt("minimumSpecialCharacters", minimumSpecialCharacters)
+            putInt("passwordCount", binding.pwdLengthSlider.progress)
+            apply()
         }
 
         val random = SecureRandom()
